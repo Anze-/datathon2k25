@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0b6bdf02-2f4d-4618-882c-31bf5212b63d" name="Changes" comment="initial minhash work">
-      <change beforePath="$PROJECT_DIR$/data" beforeDir="false" />
+    <list default="true" id="0b6bdf02-2f4d-4618-882c-31bf5212b63d" name="Changes" comment="Optimize URL filtering by removing unused data">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/url_filtering.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/url_filtering.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -87,7 +87,7 @@
       <workItem from="1743854858931" duration="2504000" />
       <workItem from="1743860039522" duration="15971000" />
       <workItem from="1743882593761" duration="182000" />
-      <workItem from="1743882813431" duration="3490000" />
+      <workItem from="1743882813431" duration="4578000" />
     </task>
     <task id="LOCAL-00001" summary="initial ner commit">
       <option name="closed" value="true" />
@@ -113,7 +113,23 @@
       <option name="project" value="LOCAL" />
       <updated>1743886650060</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Optimize URL filtering by removing unused data">
+      <option name="closed" value="true" />
+      <created>1743886696288</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1743886696288</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Optimize URL filtering by removing unused data">
+      <option name="closed" value="true" />
+      <created>1743886712187</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1743886712187</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -122,6 +138,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="initial ner commit" />
     <MESSAGE value="initial minhash work" />
-    <option name="LAST_COMMIT_MESSAGE" value="initial minhash work" />
+    <MESSAGE value="Optimize URL filtering by removing unused data" />
+    <option name="LAST_COMMIT_MESSAGE" value="Optimize URL filtering by removing unused data" />
   </component>
 </project>
