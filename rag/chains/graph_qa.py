@@ -30,7 +30,7 @@ def calculate_similarity(query: str, entities: List[str]) -> List[float]:
 
 
 class GraphSparqlQAChain(Chain):
-    graph = Field(exclude=True)
+    graph:'typing.Any' = Field(exclude=True)
     sparql_generation_select_chain: LLMChain
     sparql_generation_update_chain: LLMChain
     sparql_intent_chain: LLMChain

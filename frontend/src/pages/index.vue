@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+  import { ref, onMounted } from 'vue';
 import Chat from '@/components/Chat.vue';
 
 const chats = ref([]);
@@ -47,16 +47,19 @@ const createNewChat = () => {
   increasingCounter.value++;
   chats.value.push(newChat);
   selectedChat.value = newChat.id;
+
 };
+
+// Load the chats from the session storage
+onMounted(() => {
+  createNewChat();
+});
 
 const deleteChat = (chatId) => {
   chats.value = chats.value.filter(chat => chat.id !== chatId);
   if (selectedChat.value === chatId) {
     selectedChat.value = chats.value.length > 0 ? chats.value[0].id : null;
   }
-  // Delete from the session storage the chat
-  sessionStorage.removeItem(`chat-${chatId}`);
-
   if (chats.value.length === 0) {
     createNewChat();
   }

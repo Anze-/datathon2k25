@@ -22,6 +22,9 @@ from dotenv import load_dotenv
 from owlready2 import *
 import config
 
+#import Optional
+from typing import Optional
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # History length parameter
@@ -48,10 +51,10 @@ def create_graph():
             print(f"Source file {config.ONTOLOGY_FILE} not found. Retrying in 5 seconds...")
             time.sleep(5)
 
+os.environ["OPENAI_API_KEY"] = ""
 
 # Initialize the RDF graph
 graph = create_graph()
-graph.load_schema()
 
 # Initialize the LLM model
 llm = ChatOpenAI(model="gpt-4o-mini")
@@ -75,13 +78,13 @@ setup_global_retriever(Chroma(
 ))
 
 # Initialize the conversation history deque
-chat_history = {}
+all_chat_history = {}
 
 # FastAPI router initialization
 router = APIRouter()
 
 # Initialize the prompt manager
-prompt_manager = PromptManager('prompts/')
+prompt_manager = PromptManager('./rag/prompts/')
 
 
 def prompt_classifier(input: Question):
@@ -175,15 +178,17 @@ async def translate_answer(question: Question, question_language: str, context):
 
 @router.post("/chat", response_model=Answer)
 async def ask_question(question: Question, x_chat_id: Optional[str] = Header(None)):
+    print(question, x_chat_id)
     try:
-        chat_history[user_id] = deque(maxlen=HISTORY_LEN)
+        all_chat_history[x_chat_id] = deque(maxlen=HISTORY_LEN)
+        chat_history = all_chat_history[x_chat_id]
 
         # Translate the question to English
-        language_prompt = prompt_manager.get_prompt('get_language').format(
-            _USER_QUERY_=question.userInput
-        )
-        translated_question = llm.invoke(language_prompt).content
-        question_language, question.userInput = translated_question.split("-", 1)
+        # language_prompt = prompt_manager.get_prompt('get_language').format(
+        #     _USER_QUERY_=question.userInput
+        # )
+        #translated_question = question.userInput#llm.invoke(language_prompt).content
+        question_language, question.userInput = "english", question.userInput #translated_question.split("-", 1)
 
         print(f"Question Language: {question_language} - Translated Question: {question.userInput}")
 
@@ -230,5 +235,7 @@ async def ask_question(question: Question, x_chat_id: Optional[str] = Header(Non
         # Generate the prompt and invoke the LLM for certain labels
     except Exception as e:
         print(e)
+        # print stacktrace
+        import traceback
         return Answer(textResponse="Something gone wrong, I'm not able to answer your question", textExplanation="",
                       data="", label="Error")

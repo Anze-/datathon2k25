@@ -2,7 +2,7 @@ from rag.chains.graph_qa import GraphSparqlQAChain
 from rag.schemas.promptmanager import PromptManager
 
 # Initialize the prompt manager
-prompt_manager = PromptManager('prompts/')
+prompt_manager = PromptManager('./rag/prompts/')
 
 
 # GENERAL QA CHAIN
