@@ -2,7 +2,7 @@ import os
 import time
 import nltk
 
-
+from rag.chains.retrieval import setup_global_retriever
 from fastapi import APIRouter
 from rag.schemas.promptmanager import PromptManager
 from rag.chains.ontology_rag import GeneralQAChain
@@ -10,6 +10,7 @@ from rag.schemas.models import Question, Answer
 
 from langchain_community.graphs import RdfGraph
 from langchain.prompts import PromptTemplate, FewShotPromptTemplate
+from langchain.vectorstores import Chroma
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from collections import deque
@@ -53,6 +54,13 @@ graph.load_schema()
 
 # Initialize the LLM model
 llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+
+# Initialize the vector database retriever
+setup_global_retriever(Chroma(
+    collection_name="gieni",
+    embedding_function=embeddings,
+    persist_directory="./gieni_db",  # Where to save data locally, remove if not necessary
+))
 
 # Initialize the conversation history deque
 chat_history = []

@@ -24,6 +24,8 @@ from langchain_community.graphs.rdf_graph import RdfGraph
 
 import warnings
 
+from rag.retrieval import get_global_retriever
+
 warnings.filterwarnings("ignore")
 
 prefixes = ["PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
@@ -120,7 +122,7 @@ class GraphSparqlQAChain(Chain):
             ValueError: If `allow_dangerous_requests` is not set to True.
         """
         super().__init__(**kwargs)
-        self.retriever = Retriever()
+        self.retriever = get_global_retriever()
         if self.allow_dangerous_requests is not True:
             raise ValueError(
                 "In order to use this chain, you must acknowledge that it can make "
@@ -245,8 +247,8 @@ class GraphSparqlQAChain(Chain):
             graph_context_str = str(graph_context)
 
             # vector search
-            retrieved_docs = self.retriever.retrieve(graph_context_str. k=10)
-            vector_context = "\n".join([doc.page_content for doc in retrieved_docs])
+            retrieved_docs = self.retriever.retrieve(graph_context_str, k=10)
+            vector_context = "\n".join([doc.page_content for doc,score in retrieved_docs])
 
             _run_manager.on_text("Retrieved vector context:", end="\n", verbose=self.verbose)
             _run_manager.on_text(vector_context, color="yellow", end="\n", verbose=self.verbose)
