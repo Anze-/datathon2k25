@@ -1,10 +1,10 @@
 <template>
-  <div class="fill-height d-flex flex-column fill-width" style="max-height: 100vh">
+  <div class="fill-height d-flex flex-column fill-width" style="max-height: 100vh; width:100%">
     <div v-if="!chatId">
       No chat :(
     </div>
-    <v-container v-else fluid class="fill-height justify-center" style="overflow: auto">
-      <v-col cols=6 md=8 sm=10>
+    <v-container v-else fluid :class="['fill-height full-width justify-center', messages.length > 0 ? 'align-start' : 'align-center']" style="overflow: auto">
+      <v-col cols=6 md=8 sm=10 v-if="messages.length > 0">
           <div v-for="(item, index) in messages" :key="index"
                :class="['d-flex flex-row align-center', item.from == 'user' ? 'justify-end': null, (index > 0 && messages[index-1].from != item.from) ? 'mt-8' : 'mt-2']">
             <span v-if="item.from == 'user'" class="msg blue--text bg-blue-grey-lighten-5 rounded-xl px-4 py-2 mr-3">{{ item.msg }}</span>
@@ -20,6 +20,19 @@
             <span v-if="item.from != 'user'" class="msg bg-blue-grey-lighten-4 rounded-xl px-4 py-2 blue--text ml-3">{{ item.msg }}</span>
           </div>
           <div ref="scrollSentinel"></div>
+        </v-col>
+        <v-col cols=6 md=8 sm=10 v-else>
+          <div class="d-flex flex-column align-center justify-center fill-height">
+            <v-avatar size="100" color="indigo">
+              <v-img
+                :src="botLogo"
+                height="128"
+                width="128"
+                />
+            </v-avatar>
+            <h1 class="mt-4">Welcome to Genie</h1>
+            <p class="text-center">Type your message and hit enter to start chatting with Genie.</p>
+          </div>
         </v-col>
     </v-container>
     <v-footer fixed class="fill-width" color="transparent">
@@ -59,16 +72,13 @@ const scrollSentinel = useTemplateRef('scrollSentinel');
 
 
 const loadPreviousMessages = (chatId) => {
-  messages.value = [
-    { id: 1, msg: `Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId} Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}`, from: 'user' },
-    { id: 1, msg: `Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId} Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}`, from: 'user' },
-    { id: 1, msg: `Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId} Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}`, from: 'user' },
-    { id: 1, msg: `Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId} Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}`, from: 'user' },
-    { id: 1, msg: `Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId} Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}`, from: 'user' },
-    { id: 1, msg: `Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId} Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}`, from: 'user' },
-    { id: 1, msg: `Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId} Hello sadfmasjfdlsakjdf lasdjf sdlfj asd fasdf jasd fjas dfasd fasl kjfalsk djfal skjdl kdsjf lksjdflsdkfj sldk fj dsfrom chat ${chatId}`, from: 'user' },
-    { id: 2, msg: `Hello to you!`, from: 'bot' },
-  ];
+// Retrieve the messages from the session storage
+  const storedMessages = sessionStorage.getItem(`chat-${chatId}`);
+  if (storedMessages) {
+    messages.value = JSON.parse(storedMessages);
+  } else {
+    messages.value = [];
+  }
 };
 
 const scrollChat = () => {
@@ -77,6 +87,7 @@ const scrollChat = () => {
 
 const addLocalMessage = (msg) => {
   messages.value.push(msg);
+  sessionStorage.setItem(`chat-${props.chatId}`, JSON.stringify(messages.value));
   scrollChat();
 };
 

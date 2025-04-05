@@ -14,6 +14,14 @@
     <v-list>
       <v-list-item v-for="chat in chats" :key="chat.id" @click="openChat(chat.id)" :active="selectedChat === chat.id">
         <v-list-item-title>{{ chat.name }}</v-list-item-title>
+        <template v-slot:append>
+          <v-btn
+            icon="mdi-delete"
+            variant="plain"
+            size="medium"
+            @click.stop="deleteChat(chat.id)"
+          ></v-btn>
+        </template>
       </v-list-item>
     </v-list>
   </v-navigation-drawer>
@@ -26,21 +34,32 @@
 import { ref } from 'vue';
 import Chat from '@/components/Chat.vue';
 
-const chats = ref([
-  { id: 1, name: 'Chat 1' },
-  { id: 2, name: 'Chat 2' },
-  { id: 3, name: 'Chat 3' },
-]);
+const chats = ref([]);
 
 const selectedChat = ref(null);
+const increasingCounter = ref(0);
 
 const createNewChat = () => {
   const newChat = {
     id: Date.now(),
-    name: `Chat ${chats.value.length + 1}`,
+    name: `Chat ${increasingCounter.value + 1}`,
   };
+  increasingCounter.value++;
   chats.value.push(newChat);
   selectedChat.value = newChat.id;
+};
+
+const deleteChat = (chatId) => {
+  chats.value = chats.value.filter(chat => chat.id !== chatId);
+  if (selectedChat.value === chatId) {
+    selectedChat.value = chats.value.length > 0 ? chats.value[0].id : null;
+  }
+  // Delete from the session storage the chat
+  sessionStorage.removeItem(`chat-${chatId}`);
+
+  if (chats.value.length === 0) {
+    createNewChat();
+  }
 };
 
 const openChat = (chatId) => {
