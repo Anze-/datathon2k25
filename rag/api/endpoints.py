@@ -3,7 +3,7 @@ import time
 import nltk
 
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from rag.schemas.promptmanager import PromptManager
 from rag.chains.ontology_rag import GeneralQAChain
 from rag.schemas.models import Question, Answer
@@ -55,7 +55,7 @@ graph.load_schema()
 llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
 
 # Initialize the conversation history deque
-chat_history = []
+chat_history = {}
 
 # FastAPI router initialization
 router = APIRouter()
@@ -155,10 +155,9 @@ async def translate_answer(question: Question, question_language: str, context):
 
 
 @router.post("/chat", response_model=Answer)
-async def ask_question(question: Question):
+async def ask_question(question: Question, x_chat_id: Optional[str] = Header(None)):
     try:
-
-        chat_history = deque(maxlen=HISTORY_LEN)
+        chat_history[user_id] = deque(maxlen=HISTORY_LEN)
 
         # Translate the question to English
         language_prompt = prompt_manager.get_prompt('get_language').format(
