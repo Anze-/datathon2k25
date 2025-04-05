@@ -41,7 +41,7 @@ const increasingCounter = ref(0);
 
 const createNewChat = () => {
   const newChat = {
-    id: Date.now(),
+    id: "" + Date.now(),
     name: `Chat ${increasingCounter.value + 1}`,
   };
   increasingCounter.value++;
@@ -52,14 +52,37 @@ const createNewChat = () => {
 
 // Load the chats from the session storage
 onMounted(() => {
-  createNewChat();
+  const storedChats = JSON.parse(sessionStorage.getItem('chats'));
+  // get size of dictionary
+  if (storedChats && Object.keys(storedChats).length > 0) {
+  // storedChats are in the form of { chatId: [message...] }
+    chats.value = Object.keys(storedChats).map((key, index) => ({
+      id: key,
+      name: `Chat ${index + 1}`,
+      messages: storedChats[key],
+    }));
+    increasingCounter.value = chats.value.length;
+    // Set the selected chat to the first one
+    selectedChat.value = chats.value[0].id;
+  } else {
+    createNewChat();
+  }
 });
+
+const deleteChatStorage = (chatId) => {
+  const storedChats = JSON.parse(sessionStorage.getItem('chats'));
+  if (storedChats && storedChats[chatId]) {
+    delete storedChats[chatId];
+    sessionStorage.setItem('chats', JSON.stringify(storedChats));
+  }
+};
 
 const deleteChat = (chatId) => {
   chats.value = chats.value.filter(chat => chat.id !== chatId);
   if (selectedChat.value === chatId) {
     selectedChat.value = chats.value.length > 0 ? chats.value[0].id : null;
   }
+  deleteChatStorage(chatId);
   if (chats.value.length === 0) {
     createNewChat();
   }

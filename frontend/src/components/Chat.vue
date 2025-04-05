@@ -59,7 +59,7 @@ import {sendMessage} from "@/plugins/axios";
 
 const props = defineProps({
   chatId: {
-    type: [Number, null],
+    type: [String, null],
     required: true,
   },
 });
@@ -76,17 +76,31 @@ const scrollSentinel = useTemplateRef('scrollSentinel');
 
 
 const loadPreviousMessages = (chatId) => {
+  const chats = JSON.parse(sessionStorage.getItem('chats'));
+  if (chats && chats[chatId]) {
+    messages.value = chats[chatId];
+    scrollChat();
+  } else {
+    resetMessages();
+  }
+};
+const persistMessages = () => {
+  const chats = JSON.parse(sessionStorage.getItem('chats')) || {};
+  chats[props.chatId] = messages.value;
+  sessionStorage.setItem('chats', JSON.stringify(chats));
 };
 
 const scrollChat = () => {
-  if (scrollSentinel.value) {
-    setTimeout(()=>scrollSentinel.value.scrollIntoView({ behavior: 'smooth' }), 100);
-  }
+    setTimeout(()=>{
+    if (scrollSentinel.value)
+      scrollSentinel.value.scrollIntoView({ behavior: 'smooth' })
+    } , 100);
 };
 
 const addLocalMessage = (msg) => {
   messages.value.push(msg);
   scrollChat();
+  persistMessages();
 };
 
 const send = () => {
@@ -97,14 +111,14 @@ const send = () => {
   addLocalMessage({ msg: '', from: 'bot', loading: true });
   sendMessage(props.chatId, currentMessage.value)
     .then((msg) => {
-      loading.value = false;
       messages.value.splice(messages.value.length - 1, 1);
-      messages.value.push({ msg: msg, from: 'bot', loading: false });
+      addLocalMessage({ msg: msg, from: 'bot', loading: false });
     })
     .catch((error) => {
-      loading.value = false;
       messages.value.splice(messages.value.length - 1, 1);
-      messages.value.push({ msg: 'Error: ' + error.message, from: 'bot', loading: false });
+      addLocalMessage({ msg: 'Error: ' + error.message, from: 'bot', loading: false });
+    }).finally(() => {
+      loading.value = false;
     });
   currentMessage.value = '';
 };
