@@ -87,7 +87,7 @@
       <workItem from="1743854858931" duration="2504000" />
       <workItem from="1743860039522" duration="15971000" />
       <workItem from="1743882593761" duration="182000" />
-      <workItem from="1743882813431" duration="2412000" />
+      <workItem from="1743882813431" duration="3490000" />
     </task>
     <task id="LOCAL-00001" summary="initial ner commit">
       <option name="closed" value="true" />
@@ -105,7 +105,15 @@
       <option name="project" value="LOCAL" />
       <updated>1743882017104</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="initial minhash work">
+      <option name="closed" value="true" />
+      <created>1743886650060</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1743886650060</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
