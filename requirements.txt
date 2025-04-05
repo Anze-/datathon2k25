@@ -2,7 +2,7 @@ langchain
 fastapi
 langchain-chroma
 langchain-community
-langchain-google-genai
+langchain-openai
 python-dotenv
 sentence_transformers
 rdflib

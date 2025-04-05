@@ -18,15 +18,17 @@ class VectorRetriever:
         return results
 
     def retrieve_vector(self, vector, k=5):
-        results = self.similarity_search_by_vector_with_relevance_scores(vector, k=k)
+        results = self.vector_store.similarity_search_by_vector_with_relevance_scores(vector, k=k)
         return results
 
-    def count_results(self, query, threshold = 0.5):
+    def count_results(self, query, threshold=0.5):
         results = self.vector_store.similarity_search(query, k=1000000)
         results = [(result, score) for result, score in results if score > threshold]
         return results
 
+
 __global_retriever = None
+
 
 def setup_global_retriever(vector_store):
     """
@@ -37,6 +39,7 @@ def setup_global_retriever(vector_store):
     """
     global __global_retriever
     __global_retriever = VectorRetriever(vector_store)
+
 
 def get_global_retriever():
     """

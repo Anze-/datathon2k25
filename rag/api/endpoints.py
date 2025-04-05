@@ -1,6 +1,10 @@
 import os
 import time
 import nltk
+import torch
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_openai import ChatOpenAI
+from sentence_transformers import SentenceTransformer
 
 from rag.chains.retrieval import setup_global_retriever
 from fastapi import APIRouter
@@ -15,6 +19,10 @@ from langchain.vectorstores import Chroma
 from langchain_google_genai import ChatGoogleGenerativeAI
 from collections import deque
 from dotenv import load_dotenv
+from owlready2 import *
+import config
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # History length parameter
 HISTORY_LEN = 1
@@ -25,35 +33,39 @@ load_dotenv()
 nltk.download('punkt_tab')
 
 
-def create_graph(source_file):
+def create_graph():
     """
     Creates an RDF graph from the specified file, retrying every 30 seconds until successful.
-    
-    Args:
-        source_file (str): The file path for the RDF source.
-    
+
     Returns:
         RdfGraph: An RDFGraph instance created from the source file.
     """
     while True:
         try:
-            graph = RdfGraph(
-                source_file=source_file,
-                serialization="xml",
-                standard="rdf"
-            )
+            graph = get_ontology(config.ONTOLOGY_FILE).load()
             return graph
         except FileNotFoundError:
-            print(f"Source file {source_file} not found. Retrying in 30 seconds...")
-            time.sleep(30)
+            print(f"Source file {config.ONTOLOGY_FILE} not found. Retrying in 5 seconds...")
+            time.sleep(5)
 
 
 # Initialize the RDF graph
-graph = create_graph(os.environ['KB_FILE_PATH'] + os.environ['KB_FILE_NAME'])
+graph = create_graph()
 graph.load_schema()
 
 # Initialize the LLM model
-llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+llm = ChatOpenAI(model="gpt-4o-mini")
+warnings.filterwarnings("ignore")
+
+model_name = "sentence-transformers/all-MiniLM-L6-v2"
+model_kwargs = {'device': device}
+encode_kwargs = {'normalize_embeddings': True, 'batch_size': 256}
+embeddings = HuggingFaceEmbeddings(
+    model_name=model_name,
+    model_kwargs=model_kwargs,
+    encode_kwargs=encode_kwargs
+)
+
 
 # Initialize the vector database retriever
 setup_global_retriever(Chroma(
@@ -84,9 +96,8 @@ def prompt_classifier(input: Question):
     """
 
     examples = [
-        {
-            "text": "Predict for the next month the cost_working_avg for Large Capacity Cutting Machine 2 based on last three months data",
-            "label": "predictions"},
+        {"text": "Predict for the next month the cost_working_avg for Large Capacity Cutting Machine 2 based on last three months data",
+         "label": "predictions"},
         {"text": "Generate a new kpi named machine_total_consumption which use some consumption kpis to be calculated",
          "label": "new_kpi"},
         {"text": "Compute the Maintenance Cost for the Riveting Machine 1 for yesterday", "label": "kpi_calc"},
@@ -178,11 +189,12 @@ async def ask_question(question: Question):
         print(f"Question Language: {question_language} - Translated Question: {question.userInput}")
 
         # Classify the question
-        label = prompt_classifier(question)
+        # label = prompt_classifier(question)
+        label = 'q'
 
         # Mapping of handlers
         handlers = {
-            'kb_q': lambda: handle_kb_q(question, llm, graph, chat_history),
+            'q': lambda: handle_kb_q(question, llm, graph, chat_history),
         }
 
         # Check if the label is not in the handlers (i.e. extra-domain question)
@@ -195,19 +207,19 @@ async def ask_question(question: Question):
 
             # Update the history
             chat_history.append({'question': question.userInput.replace('{', '{{').replace('}', '}}'),
-                            'answer': llm_result.content.replace('{', '{{').replace('}', '}}')})
+                                 'answer': llm_result.content.replace('{', '{{').replace('}', '}}')})
 
             if question_language.lower() != "english":
                 llm_result = await translate_answer(question, question_language, llm_result.content)
 
             return Answer(textResponse=llm_result.content, textExplanation='', data='', label='kb_q')
 
-            # Execute the handler
+        # Execute the handler
         context = await handlers[label]()
-        if label == 'kb_q':
+        if label == 'q':
             # Update the history
             chat_history.append({'question': question.userInput.replace('{', '{{').replace('}', '}}'),
-                            'answer': context.replace('{', '{{').replace('}', '}}')})
+                                 'answer': context.replace('{', '{{').replace('}', '}}')})
 
             # Translate the response back to the user's language
             if question_language.lower() != "english":
