@@ -14,10 +14,6 @@ def generate_response(query: str, relevant_entities: list[str], retrieved_docs: 
     with open(config.SUPPLY_CHAIN_PROMPT_FILE, "r", encoding="utf-8") as f:
         template_text = f.read()
 
-    # format input blocks
-    for i, doc in enumerate(retrieved_docs):
-        print(doc)
-        print()
     context_block = "\n".join([f"{i + 1}. {doc.page_content}" for i, (doc, _) in enumerate(retrieved_docs)])
     entities_block = ", ".join(relevant_entities)
     history_block = "\n".join(history) if history else "None"
@@ -28,7 +24,7 @@ def generate_response(query: str, relevant_entities: list[str], retrieved_docs: 
         kb_entities=entities_block,
         retrieved_docs=context_block,
         history=history_block,
-        query=query
+        user_query=query
     )
 
     # call the model
