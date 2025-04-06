@@ -6,11 +6,11 @@ from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
 
 import config
-from rag.chains.kb import get_relevant_entities, create_graph
+from rag.chains.kb import create_graph
 from rag.chains.retriever import get_global_retriever
 from rag.schemas.models import Question, Answer
-from sentence_transformers import SentenceTransformer
 from rag.chains.retriever import setup_global_retriever
+from langchain.embeddings import HuggingFaceEmbeddings
 
 
 from rag.generator import generate_response
@@ -19,8 +19,6 @@ from rag.generator import generate_response
 device = "cuda" if torch.cuda.is_available() else "cpu"
 HISTORY_LEN = 5
 
-# Load environment variables
-load_dotenv()
 nltk.download('punkt_tab')
 
 # FastAPI router initialization
@@ -28,18 +26,19 @@ router = APIRouter()
 chat_history = deque(maxlen=HISTORY_LEN)
 create_graph()
 
-embeddings = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-faiss_index = None#FAISS.load_local(config.INDEX_PATH, embeddings, allow_dangerous_deserialization=True)
+
+embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+faiss_index = FAISS.load_local(config.INDEX_PATH, embedding_model, allow_dangerous_deserialization=True)
 setup_global_retriever(faiss_index)
 
 
 def answer_query(query: str, history: list[str]):
     print("Getting relevant entities!")
-    relevant_entities = get_relevant_entities(query)
+    # relevant_entities = get_relevant_entities(query)
     print("Trying to retrieve!")
     docs = get_global_retriever().retrieve(query, k=3)
     print("Retrieved!!!")
-    response = generate_response(query, relevant_entities, docs, history)
+    response = generate_response(query, [], docs, history)
     return response
 
 

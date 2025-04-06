@@ -2,12 +2,14 @@
 
 import os
 
-os.environ["OPENAI_API_KEY"] = ""
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # PATHS
 PROJECT_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__))
 DATASET_PATH = os.path.join(PROJECT_FOLDER_PATH, 'data')
-PROMPTS_PATH = os.path.join(DATASET_PATH, 'rag', 'prompts')
+PROMPTS_PATH = os.path.join(PROJECT_FOLDER_PATH, 'rag', 'prompts')
 SUPPLY_CHAIN_PROMPT_FILE = os.path.join(PROMPTS_PATH, 'query.txt')
 
 
