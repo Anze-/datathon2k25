@@ -16,10 +16,11 @@ warnings.filterwarnings("ignore")
 sentence_transformer = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
 
-def calculate_similarity(query: str, entities: List[str]) -> List[float]:
+def calculate_similarity(query: str, entities) -> List[float]:
     """Calculate semantic similarity between the user query and RDF entities"""
     print("Query", query)
-    query_embedding = sentence_transformer.encode([query])
+    query_embedding = sentence_transformer.encode([query], show_progress_bar=True)
+    print("Embedded query!")
     entity_embeddings = sentence_transformer.encode(entities)
     print("Embedded :)")
 
@@ -50,11 +51,11 @@ def create_graph():
     Loads ontology graph from file.
     """
     global __cached_graph
-    while True:
-        try:
-            if __cached_graph is None:
-                __cached_graph = get_ontology(config.ONTOLOGY_FILE).load()
-            return __cached_graph
-        except FileNotFoundError:
-            print(f"Source file {config.ONTOLOGY_FILE} not found. Retrying in 5 seconds...")
-            time.sleep(5)
+    try:
+        if __cached_graph is None:
+            __cached_graph = list(get_ontology(config.ONTOLOGY_FILE).load().classes())
+            __cached_graph = [entity.name for entity in __cached_graph]
+        return __cached_graph
+    except FileNotFoundError:
+        print(f"Source file {config.ONTOLOGY_FILE} not found. Retrying in 5 seconds...")
+        return None

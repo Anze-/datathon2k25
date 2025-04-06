@@ -29,7 +29,7 @@ chat_history = deque(maxlen=HISTORY_LEN)
 create_graph()
 
 embeddings = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-faiss_index = FAISS.load_local(config.INDEX_PATH, embeddings, allow_dangerous_deserialization=True)
+faiss_index = None#FAISS.load_local(config.INDEX_PATH, embeddings, allow_dangerous_deserialization=True)
 setup_global_retriever(faiss_index)
 
 
