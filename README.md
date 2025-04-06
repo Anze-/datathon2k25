@@ -126,8 +126,14 @@ Challenge: has something to do with sentient chat
 Who is behind all this? Who is interested?
 
 
-## General description
-What is the problem?
+## 4 steps
+
+1. feature engineering
+2. embedding
+3. RAG
+4. Agent and UI
+
+
 
 ## Available data
 

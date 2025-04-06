@@ -13,5 +13,3 @@ app.add_middleware(
 )
 # Register the router
 app.include_router(router)
-
-
