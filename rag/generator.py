@@ -15,7 +15,10 @@ def generate_response(query: str, relevant_entities: list[str], retrieved_docs: 
         template_text = f.read()
 
     # format input blocks
-    context_block = "\n".join([f"{i + 1}. {doc}" for i, doc in enumerate(retrieved_docs)])
+    for i, doc in enumerate(retrieved_docs):
+        print(doc)
+        print()
+    context_block = "\n".join([f"{i + 1}. {doc.page_content}" for i, (doc, _) in enumerate(retrieved_docs)])
     entities_block = ", ".join(relevant_entities)
     history_block = "\n".join(history) if history else "None"
 
@@ -28,12 +31,11 @@ def generate_response(query: str, relevant_entities: list[str], retrieved_docs: 
         query=query
     )
 
-    print(rendered_prompt)
     # call the model
     response = client.chat.completions.create(model=GEN_MODEL,
                                               messages=[
-                                                  {"role": "system",
-                                                   "content": "You are a helpful assistant for supply chain professionals."},
+                                                  {"role": "system", "content": "You are a highly skilled Supply Chain "
+                                                                                "Assistant specialized in vendor analysis, risk assessment, and market intelligence."},
                                                   {"role": "user", "content": rendered_prompt}
                                               ],
                                               temperature=0.3)

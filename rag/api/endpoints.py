@@ -11,6 +11,7 @@ from rag.chains.retriever import get_global_retriever
 from rag.schemas.models import Question, Answer
 from rag.chains.retriever import setup_global_retriever
 from langchain.embeddings import HuggingFaceEmbeddings
+from rag.chains.kb import get_relevant_entities
 
 
 from rag.generator import generate_response
@@ -34,17 +35,18 @@ setup_global_retriever(faiss_index)
 
 def answer_query(query: str, history: list[str]):
     print("Getting relevant entities!")
-    # relevant_entities = get_relevant_entities(query)
+    relevant_entities = get_relevant_entities(query)
     print("Trying to retrieve!")
     docs = get_global_retriever().retrieve(query, k=3)
     print("Retrieved!!!")
-    response = generate_response(query, [], docs, history)
+    response = generate_response(query, relevant_entities, docs, history)
     return response
 
 
 @router.post("/chat", response_model=Answer)
 async def ask_question(question: Question):
     try:
+        print(question.userInput)
         context = answer_query(question.userInput, chat_history)
         return Answer(textResponse=context, textExplanation='', data='', label='question')
 

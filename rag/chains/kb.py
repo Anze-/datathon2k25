@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import time
 from typing import List
 from owlready2 import get_ontology
 
@@ -30,7 +29,7 @@ def calculate_similarity(query: str, entities) -> List[float]:
     return similarities.tolist()
 
 
-def get_relevant_entities(query: str, threshold: float = 0.5) -> List[str]:
+def get_relevant_entities(query: str, threshold: float = 0.3) -> List[str]:
     """
     Get relevant entities based on semantic similarity to the user query.
     """
