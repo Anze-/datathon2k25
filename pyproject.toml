@@ -1,7 +1,7 @@
 [project]
 name = "datathon2k25"
 version = "0.1.0"
-description = "Add your description here"
+description = "Pufferfish solution for Orderfox's challenge"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

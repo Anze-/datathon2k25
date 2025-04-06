@@ -160,3 +160,7 @@ a couple of practical examples
 
 # Results
 recap of results and images
+
+## Datasets
+- geonames-all-cities-with-a-population-1000.csv
+- us-cities-demographics.csv
