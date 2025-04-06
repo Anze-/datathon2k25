@@ -5,7 +5,7 @@
           <div v-for="(item, index) in messages" :key="index"
                :class="['d-flex flex-row align-center', item.from == 'user' ? 'justify-end': null, (index > 0 && messages[index-1].from != item.from) ? 'mt-8' : 'mt-2']">
             <span v-if="item.from == 'user'" class="msg blue--text bg-blue-grey-lighten-5 rounded-xl px-4 py-2 mr-3">
-              <vue-markdown :source="item.loading ? 'Loading...' : item.msg" :options="{forceBlock: true}"></vue-markdown>
+              <vue-markdown class="msg-markdown" :source="item.loading ? 'Loading...' : item.msg" :options="{forceBlock: true}"></vue-markdown>
             </span>
             <v-avatar style="align-self: start" :color="item.from == 'user' ? 'indigo': 'red'" size="36">
               <v-img
@@ -17,7 +17,7 @@
                <span v-else class="white--text">{{ item.from[0] }}</span>
             </v-avatar>
             <span v-if="item.from != 'user'" class="msg bg-blue-grey-lighten-4 rounded-xl px-4 py-2 blue--text ml-3">
-              <vue-markdown :source="item.loading ? 'Loading...' : item.msg" :options="{forceBlock: true}"></vue-markdown>
+              <vue-markdown class="msg-markdown" :source="item.loading ? 'Loading...' : item.msg" :options="{forceBlock: true}"></vue-markdown>
             </span>
           </div>
           <div ref="scrollSentinel"></div>
@@ -145,5 +145,11 @@ watch(
 <style scoped>
 .msg {
   max-width: 50%;
+}
+</style>
+<style>
+
+.msg-markdown li {
+  margin-left: 32px!important;
 }
 </style>
