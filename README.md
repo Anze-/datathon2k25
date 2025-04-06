@@ -1,166 +1,55 @@
 # Datathon 2k25 - PUFFERFISH team
 This repo contains the works accomplished by our team during the 4th-6th April 2025 Zurich Datathon hackathon.
 Team members: Michele Dalle Rive, Fabrizio DeCastelli, Mark Sobolev, Alberto Anzellotti
+
 NDA NOTICE: some or all of the content, code and data in this repo might be covered by an NDA, please know that if you are granted to see this code you are bound not to disclose its content.
 
-# Challenge description
-4 main challenges, prizes for 1st, 2nd and 3rd challenge winners for each challenge.
-`[ALPIQ, Julius Bar, orderfox, sentient]` are the challenge sponsors.
+# Challenge
+Our challenge was kindly proposed by Orderfox, and consists in building a RAG agent that can answer questions about supply chain.
 
-## Al the companies
-### JumpTrading
-high freq trading. A long journey starting from Chicago. Tech -> clickTrading -> algorithm based trading -> improve speed -> predictive modeling.
-'complex' predictive models for the financial market at all frequencies.
-Hardware solutions: FPGAs and ASICs, microwave point to point tower wifi
-Collecting 100tb data/day
-`while True: autotrade(market_data, external_data, symbols_to_trade_on)`
+We briefly describe our solution (further explained in the report) and give instruction on how to build and run the application.
 
-internships opening in august: campusrecruiting@jumptrading.com
-different strategies need different amount of money to be effective.
+## Available data
+We were kindly provided with ~13,000 scraped websites, each consisting of 50-70 webpages. The dataset is provided in `json` format and, because of its size, we do not include it in the repository.
 
-### Julius Baer
-Banking, private clients wealth management, 18 month graduate programme with 3 different locations
--> chief data office (flex-track)
-singapore, hongkong, 30ppl/year recruitment strars in february and job starts in october.
+## 4 solution steps
 
-Problem - onboarding clients
-can we accept or do we have to reject the client?
-binary classification task
-- Klaus Drexelius will be at the apo
-
-### ALPIQ
-
-Modeling tomorrow energy needs.
-Victoria Desmarqest works for a team doing speculative positions on the energy market.
-Different energy sources: 1.3BLN invested from 2017 to 2024.
-17.2 GWh
-Renewable sources require energy storage and backup plans: batteries, dams (650GWH), green hydrogen (high temp ind. processes), 
-
-18months graduate program, will be there at the apero.
-
-
-Challenge: supply must meeet demand, scheduled and realized demand have discrepancies, disgrpancies are penalized.
-How can we optimize for both the portfolio and consumer?
-
-`consumption_forecast(historical consumer and feature data)`
-Dirty data, missing data etc..
-
-spanning august 2024, hourly granularity
-
-5 teams selected to present the results
-(see 2 reference pictures shot by phone)
-
-Tara Tosic (is the quantitave analyst, blonde hair, she is more into the technical details)
-
-
-### orderfox
-Fabian Bellgart (strategic assistant - electrical industial engineering)
-David Dogon (AI Director - phd in chemical/industrial eng.)
-
-An atypical startup - staying in villa windegg
-Young team prone to taking risks and developing ideas. (~ 30people )
-product: partfox: ai based cnc network.
-
-CAD drawing matchmaking with... WHAT?
-
-gieni: new product: a true AI agent that helps with machining questions
-
-close relationship with microsoft, now officially partners.
-
-Challenge:
-
-database of HTML scraped from production pipelines,
-$40 of OpenAI key xD, for real, 40 usd?
-
-jupyter notebook with a skeleton workflow
-
-Answer to:
-in which markets can I find new  buyer for specialty chemicals?
-
-Key components of the project:
- - processing raw data, highlight important data  -> metadata & knowledge base
- - vector & graph databases for graph, (even just SQL databases)
- - retrieval system 
- - generation agent (natural language)
-
-direct emplyment is on the table
-
-
-### Sentient
-
-the chief of staff is called: Vivek Kolli
-deep tech startup, sandeep nailwal confounder of Polygon
-
-Artificial General Intelligence
-
-1.2B USD evaluation
-
-creating models and experiencing models. 
-6 use case specific models in production
-
-it's like an uncaged LLM tained on reddit that will give you a strightforward uncensored answer. 
-
-crazy ownership tech: co-owned by 6k peopke??? Signed answers that will let you know this answer comes from the model
-
-
-they have precise control on the 'safety' knob, instead of having guard rails.
-
-'It's also pretty unuhinged'
-
-Challenge: has something to do with sentient chat
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Company and people
-Who is behind all this? Who is interested?
-
-
-## 4 steps
-
-1. feature engineering
-2. embedding
+1. Data preprocessing and feature engineering
+2. Data embedding and storage
 3. RAG
 4. Agent and UI
 
-
-
-## Available data
-
-## Proposed solution concept
-
-## Current SOTA
-
 ## Proposed Proof of Concept
-
+Our proof of concept takes care of selecting the most important data, embedding it and storing it in a Vector Database. The RAG agent is then able to answer user's questions, integrating the existing data with the LLM knowledge.
 
 # Code
 
 ## Code architecture
-how is the repo organized
+The repository is organized in the following structure:
+```
+- data/: contains some resources used for processing and analyzing data
+- frontend/: web interface to interact with the chatbot.
+- indexing/: contains code used for indexing of the dataset and storing.
+- notebooks/: notebooks used together with data/ for analysis and processing
+- notes/: some generic notes used during the hackathon
+- rag/: code for the RAG agent and the webserver used to deploy it
+```
+Some important files in the repository are:
+- requirements.txt: list of required packages. The hackathon environment is very frenetic, so some packages could be missing. We apologise for any inconvenience.
+- Dockerfile: a Dockerfile that can be used to start the backend (only!) in a Docker container.
+- main.py: the main file to run the backend API. Further instructions are given in the next section.
 
 ## Install
-installing instructions
+In order to install all the required pre-requisites for the backend, you can use the `requirements.txt` file, or you can use the Dockerfile to build a Docker image that contains all the required packages.
+The packages for the frontend can be installed from the `frontend/` directory using `npm install`.
 
-## How To
-most useful commands
-
-## Examples
-a couple of practical examples
-
-# Results
-recap of results and images
+## How to run
+We suggest running the backend using the provided Docker container, or -- after installing all the required packages -- by running:
+```
+uvicorn main:app --host 0.0.0.0. --port 8000
+```
 
 ## Datasets
-- geonames-all-cities-with-a-population-1000.csv
-- us-cities-demographics.csv
+Some of the datasets we used to preprocess data are not available in the repository for space reasons. They can however be downloaded from the following links:
+- [geonames-all-cities-with-a-population-1000.csv](https://public.opendatasoft.com/explore/dataset/geonames-all-cities-with-a-population-1000/api/?disjunctive.cou_name_en&sort=name&location=2,0.90932,-0.05452&basemap=jawg.light)
+- [us-cities-demographics.csv](https://public.opendatasoft.com/explore/dataset/us-cities-demographics/export/)

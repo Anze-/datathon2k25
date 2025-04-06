@@ -9,6 +9,7 @@ import faiss
 from tqdm import tqdm
 from uuid import uuid4
 import gc
+import pandas as pd
 
 from langchain.vectorstores import FAISS
 from langchain_core.documents import Document
