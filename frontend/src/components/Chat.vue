@@ -5,7 +5,7 @@
           <div v-for="(item, index) in messages" :key="index"
                :class="['d-flex flex-row align-center', item.from == 'user' ? 'justify-end': null, (index > 0 && messages[index-1].from != item.from) ? 'mt-8' : 'mt-2']">
             <span v-if="item.from == 'user'" class="msg blue--text bg-blue-grey-lighten-5 rounded-xl px-4 py-2 mr-3">
-              {{ item.loading ? 'Loading...' : item.msg }}
+              <vue-markdown :source="item.loading ? 'Loading...' : item.msg" :options="{forceBlock: true}"></vue-markdown>
             </span>
             <v-avatar style="align-self: start" :color="item.from == 'user' ? 'indigo': 'red'" size="36">
               <v-img
@@ -17,7 +17,7 @@
                <span v-else class="white--text">{{ item.from[0] }}</span>
             </v-avatar>
             <span v-if="item.from != 'user'" class="msg bg-blue-grey-lighten-4 rounded-xl px-4 py-2 blue--text ml-3">
-              {{ item.loading ? 'Loading...' : item.msg }}
+              <vue-markdown :source="item.loading ? 'Loading...' : item.msg" :options="{forceBlock: true}"></vue-markdown>
             </span>
           </div>
           <div ref="scrollSentinel"></div>
@@ -40,7 +40,7 @@
       <v-container class="py-0 px-0 mx-0 w-100 d-flex justify-center" style="max-width:100%!important;">
           <v-col cols=6 md=8 sm=10>
             <div class="d-flex flex-row align-center justify-center align-items-center justify-items-center bg-transparent">
-              <v-text-field v-model="currentMessage" placeholder="Type Something" @keypress.enter="send" variant="outlined" hide-details rounded></v-text-field>
+              <v-textarea v-model="currentMessage" placeholder="Type Something" @keypress.enter="send" variant="outlined" hide-details rounded @keydown.enter.shift.exact="textAreaNewLine" rows="3"/>
               <v-btn icon="mdi-send" variant="tonal" class="ml-4" @click="send" :disabled="loading"/>
             </div>
           </v-col>
@@ -50,7 +50,7 @@
 </template>
 
 <script setup>
-  // Get prop chatId
+import VueMarkdown from 'vue-markdown-render'
 import { ref, watch, onMounted, defineProps, useTemplateRef } from 'vue';
 
 import botLogo from '@/assets/logo.jpeg';
@@ -67,6 +67,14 @@ const props = defineProps({
 const messages = ref([]);
 const currentMessage = ref('');
 const loading = ref(false);
+
+const textAreaNewLine = (e) => {
+  if (e.key === 'Enter') {
+    if (e.shiftKey)
+      currentMessage.value += '\n';
+    e.preventDefault();
+  }
+};
 
 const resetMessages = () => {
   messages.value = [];
@@ -103,7 +111,8 @@ const addLocalMessage = (msg) => {
   persistMessages();
 };
 
-const send = () => {
+const send = (e) => {
+  e.preventDefault();
   if (loading.value) return;
   if (currentMessage.value.trim() === '') return;
   addLocalMessage({ msg: currentMessage.value, from: 'user', loading: false });
