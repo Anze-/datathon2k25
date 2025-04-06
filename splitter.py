@@ -1,3 +1,7 @@
+### Tentative implementation of a splitter for the documents
+# This code is a work in progress and may not be fully functional.
+# In the end, we decided to go for a faster and simpler solution
+
 import json
 import os
 import pickle

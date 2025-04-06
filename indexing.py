@@ -1,4 +1,5 @@
-print("START")
+### Indexing script for the Vector Database ###
+# This stand-alone script is used to index the data.
 
 import os
 import json
@@ -104,7 +105,6 @@ def embed_documents(texts):
 
 
 def convert_chunk(chunk, idx, model):
-    print("\nProcessing chunk\n", idx, end='\n\r')
     all_docs = []
     i = 0
     for file_name in tqdm(chunk):
@@ -155,7 +155,7 @@ def main():
         gc.collect()
 
 
-    vector_store.save_local("faiss_store_working")
+    vector_store.save_local("faiss_store")
     print("Vector store saved to ./faiss_store")
 
 
