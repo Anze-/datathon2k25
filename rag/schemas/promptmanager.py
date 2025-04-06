@@ -32,15 +32,6 @@ class PromptManager:
         self.prompts_dir = prompts_dir
         self.prompts = {}
         self.load_prompts()
-        """self.switcher = {
-            "predictions": "calculation_and_forecasting",
-            "kpi_calc": "calculation_and_forecasting",
-            "new_kpi": "kpi_generation",
-            "report": "report",
-            "dashboard": "dashboard_generation",
-            "qa_preprocess": "qa_preprocess",
-            "explain_chart": "explain_chart"
-        }"""
         self.switcher = {
             "qa_select": "qa_select",
             "qa_answer": "qa_answer",

@@ -1,168 +1,49 @@
-import os
-import time
 import nltk
 import torch
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_openai import ChatOpenAI
-from sentence_transformers import SentenceTransformer
-
-from rag.chains.retrieval import setup_global_retriever
+from collections import deque
 from fastapi import APIRouter
+from dotenv import load_dotenv
+
+from rag.chains.kb import get_relevant_entities
+from rag.chains.retriever import get_global_retriever
 from rag.schemas.promptmanager import PromptManager
-from rag.chains.ontology_rag import GeneralQAChain
 from rag.schemas.models import Question, Answer
 
-from langchain_community.graphs import RdfGraph
-from langchain.prompts import PromptTemplate, FewShotPromptTemplate
-from langchain.vectorstores import Chroma
+from rag.generator import generate_response
 
-from langchain_google_genai import ChatGoogleGenerativeAI
-from collections import deque
-from dotenv import load_dotenv
-from owlready2 import *
-import config
 
+# Set device
 device = "cuda" if torch.cuda.is_available() else "cpu"
-
-# History length parameter
-HISTORY_LEN = 1
+HISTORY_LEN = 5
 
 # Load environment variables
 load_dotenv()
-
 nltk.download('punkt_tab')
-
-
-def create_graph():
-    """
-    Creates an RDF graph from the specified file, retrying every 30 seconds until successful.
-
-    Returns:
-        RdfGraph: An RDFGraph instance created from the source file.
-    """
-    while True:
-        try:
-            graph = get_ontology(config.ONTOLOGY_FILE).load()
-            return graph
-        except FileNotFoundError:
-            print(f"Source file {config.ONTOLOGY_FILE} not found. Retrying in 5 seconds...")
-            time.sleep(5)
-
-
-# Initialize the RDF graph
-graph = create_graph()
-graph.load_schema()
-
-# Initialize the LLM model
-llm = ChatOpenAI(model="gpt-4o-mini")
-warnings.filterwarnings("ignore")
-
-model_name = "sentence-transformers/all-MiniLM-L6-v2"
-model_kwargs = {'device': device}
-encode_kwargs = {'normalize_embeddings': True, 'batch_size': 256}
-embeddings = HuggingFaceEmbeddings(
-    model_name=model_name,
-    model_kwargs=model_kwargs,
-    encode_kwargs=encode_kwargs
-)
-
-
-# Initialize the vector database retriever
-setup_global_retriever(Chroma(
-    collection_name="gieni",
-    embedding_function=embeddings,
-    persist_directory="./gieni_db",  # Where to save data locally, remove if not necessary
-))
-
-# Initialize the conversation history deque
-chat_history = []
 
 # FastAPI router initialization
 router = APIRouter()
-
-# Initialize the prompt manager
+chat_history = deque(maxlen=HISTORY_LEN)
 prompt_manager = PromptManager('prompts/')
+
+
+def answer_query(query: str, history: list[str]):
+    relevant_entities = get_relevant_entities(query)
+    docs = get_global_retriever().retrieve(query, k=3)
+    response = generate_response(query, relevant_entities, docs, history)
+    return response
 
 
 def prompt_classifier(input: Question):
     """
-    Classifies an input prompt into a predefined category and generate if needed a json query to make requests to kpi engine and predictor.
-    
-    Args:
-        input (Question): The user input question to be classified.
-    
-    Returns:
-        tuple: A tuple containing the label and the extracted json_obj from the input (if applicable) and an error log.
+    Dummy classifier: Replace with your actual logic if needed.
     """
-
-    examples = [
-        {"text": "Predict for the next month the cost_working_avg for Large Capacity Cutting Machine 2 based on last three months data",
-         "label": "predictions"},
-        {"text": "Generate a new kpi named machine_total_consumption which use some consumption kpis to be calculated",
-         "label": "new_kpi"},
-        {"text": "Compute the Maintenance Cost for the Riveting Machine 1 for yesterday", "label": "kpi_calc"},
-        {"text": "Can you describe cost_working_avg?", "label": "kb_q"},
-        {"text": "Make a report about bad_cycles_min for Laser Welding Machine 1 with respect to last week",
-         "label": "report"},
-        {"text": "Create a dashboard to compare performances for different type of machines", "label": "dashboard"},
-    ]
-
-    example_prompt = PromptTemplate(
-        input_variables=["text", "label"],
-        template="Text: {text}\nLabel: {label}\n"
-    )
-
-    few_shot_prompt = FewShotPromptTemplate(
-        examples=examples,
-        example_prompt=example_prompt,
-        prefix="FEW-SHOT EXAMPLES:",
-        # TODO: fix the suffix with the correct categories
-        suffix="Task: Classify with one of the labels ['predictions', 'new_kpi', 'report', 'kb_q', 'dashboard','kpi_calc'] the following prompt:\nText: {text_input}\nLabel:",
-        input_variables=["text_input"]
-    )
-
-    prompt = few_shot_prompt.format(text_input=input.userInput)
-    label = llm.invoke(prompt).content.strip("\n")
-
-    print(f"user input request label = {label}")
-    return label
+    # Use simple routing for demo
+    return 'q'
 
 
-async def handle_kb_q(question: Question, llm, graph, history):
+async def translate_answer(question: Question, question_language: str, context: str):
     """
-    Handles a Knowledge Base query by invoking the GeneralQAChain.
-
-    This function processes the user's question and uses the GeneralQAChain to 
-    generate a response based on the knowledge graph and the conversation history.
-
-    Args:
-        question (Question): The question object containing the user's input.
-        llm (object): The language model used to generate responses.
-        graph (object): The knowledge graph used to provide context for the response.
-        history (list): A list of previous conversation entries to provide context.
-
-    Returns:
-        str: The response generated by the GeneralQAChain.
-    """
-    general_qa = GeneralQAChain(llm, graph, history)
-    response = general_qa.chain.invoke(question.userInput)
-    return response['result']
-
-
-async def translate_answer(question: Question, question_language: str, context):
-    """
-    Translates the generated response into the user's preferred language.
-
-    This function formats a prompt to translate the response content into the specified 
-    language and invokes the language model to perform the translation.
-
-    Args:
-        question (Question): The question object containing the user's input.
-        question_language (str): The language to translate the response into.
-        context (str): The context or generated response that needs to be translated.
-
-    Returns:
-        str: The translated response.
+    Translates the output into user's language using prompt template.
     """
     prompt = prompt_manager.get_prompt('translate').format(
         _CONTEXT_=context,
@@ -170,66 +51,49 @@ async def translate_answer(question: Question, question_language: str, context):
         _LANGUAGE_=question_language
     )
     print(f"Translating response to {question_language}")
-    return llm.invoke(prompt)
+    return generate_response(prompt, [])  # Using same generator
 
 
 @router.post("/chat", response_model=Answer)
 async def ask_question(question: Question):
     try:
-
-        chat_history = deque(maxlen=HISTORY_LEN)
-
-        # Translate the question to English
-        language_prompt = prompt_manager.get_prompt('get_language').format(
+        # Translate input to English
+        lang_prompt = prompt_manager.get_prompt('get_language').format(
             _USER_QUERY_=question.userInput
         )
-        translated_question = llm.invoke(language_prompt).content
+        translated_question = generate_response(lang_prompt, [])
         question_language, question.userInput = translated_question.split("-", 1)
+        print(f"Detected Language: {question_language} | Translated: {question.userInput}")
 
-        print(f"Question Language: {question_language} - Translated Question: {question.userInput}")
+        # classify
+        label = prompt_classifier(question)
 
-        # Classify the question
-        # label = prompt_classifier(question)
-        label = 'q'
-
-        # Mapping of handlers
+        # mapping of handlers
         handlers = {
-            'q': lambda: handle_kb_q(question, llm, graph, chat_history),
+            'q': lambda: answer_query(question, chat_history),
         }
 
-        # Check if the label is not in the handlers (i.e. extra-domain question)
         if label not in handlers:
-            # Format the history
-            history_context = "CONVERSATION HISTORY:\n" + "\n\n".join(
-                [f"Q: {entry['question']}\nA: {entry['answer']}" for entry in chat_history]
-            )
-            llm_result = llm.invoke(history_context + "\n\n" + question.userInput)
-
-            # Update the history
-            chat_history.append({'question': question.userInput.replace('{', '{{').replace('}', '}}'),
-                                 'answer': llm_result.content.replace('{', '{{').replace('}', '}}')})
-
-            if question_language.lower() != "english":
-                llm_result = await translate_answer(question, question_language, llm_result.content)
-
-            return Answer(textResponse=llm_result.content, textExplanation='', data='', label='kb_q')
-
-        # Execute the handler
-        context = await handlers[label]()
-        if label == 'q':
-            # Update the history
-            chat_history.append({'question': question.userInput.replace('{', '{{').replace('}', '}}'),
-                                 'answer': context.replace('{', '{{').replace('}', '}}')})
-
-            # Translate the response back to the user's language
+            context = generate_response(question.userInput, [])
+            chat_history.append({
+                'question': question.userInput,
+                'answer': context
+            })
             if question_language.lower() != "english":
                 context = await translate_answer(question, question_language, context)
-                context = context.content
+            return Answer(textResponse=context, textExplanation='', data='', label='response')
 
-            return Answer(textResponse=context, textExplanation='', data='', label=label)
+        # Run handler
+        context = await handlers[label]()
+        if question_language.lower() != "english":
+            context = await translate_answer(question, question_language, context)
+        chat_history.append({
+            'question': question.userInput,
+            'answer': context
+        })
+        return Answer(textResponse=context, textExplanation='', data='', label=label)
 
-        # Generate the prompt and invoke the LLM for certain labels
     except Exception as e:
-        print(e)
-        return Answer(textResponse="Something gone wrong, I'm not able to answer your question", textExplanation="",
+        print(f"Error: {e}")
+        return Answer(textResponse="Something went wrong, I'm not able to answer your question.", textExplanation="",
                       data="", label="Error")
