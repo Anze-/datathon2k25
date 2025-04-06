@@ -4,7 +4,8 @@ import axios from 'axios';
 // create an instance of axios
 const instance = axios.create({
   baseURL: 'http://localhost:8000', // replace with your server URL
-  timeout: 10000, // request timeout
+  timeout: 1000000, // request timeout
+
 });
 
 const sendMessage = async (chatId, message) => {

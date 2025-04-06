@@ -26,6 +26,7 @@ def generate_response(query: str, relevant_entities: list[str], retrieved_docs: 
         query=query
     )
 
+    print(rendered_prompt)
     # call the model
     response = openai.ChatCompletion.create(
         model=GEN_MODEL,
@@ -35,5 +36,4 @@ def generate_response(query: str, relevant_entities: list[str], retrieved_docs: 
         ],
         temperature=0.3,
     )
-
     return response["choices"][0]["message"]["content"]

@@ -2,7 +2,7 @@
 
 import os
 
-import config
+os.environ["OPENAI_API_KEY"] = ""
 
 # PATHS
 PROJECT_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -17,4 +17,4 @@ ONTOLOGY_FILE = os.path.join(DATASET_PATH, 'SupplyChain.rdf')
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 EMBED_MODEL = "text-embedding-3-small"
 GEN_MODEL = "gpt-4o-mini"
-INDEX_PATH = os.path.join(config.DATASET_PATH, "faiss_store_100", "index.faiss")
+INDEX_PATH = os.path.join(PROJECT_FOLDER_PATH, "faiss_store_100")
