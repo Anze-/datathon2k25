@@ -18,6 +18,7 @@ folder_path = "./data/hackathon_data/"
 NUM_CHUNKS = 1
 
 
+
 def load_document(json_file):
     with open(json_file, 'r') as f:
         try:
@@ -27,6 +28,35 @@ def load_document(json_file):
     return []
 
 
+
+### tool ###
+import pickle,json
+import numpy as np
+from tqdm import tqdm
+
+with open('random_urls.pickle', 'rb') as file:
+    random_urls = pickle.load(file)
+
+important_urls = pd.read_parquet('important_urls.parquet').url.to_list()
+
+'''
+def pick_urls():
+    np.random.seed(42)
+    all_baseurls=os.listdir('data/hackathon_data')
+    important_urls = pd.read_parquet('important_urls.parquet')
+    random_urls=[]
+    for fname in tqdm(all_baseurls):
+        if fname.endswith('.json'):
+            udata = load_document('./data/hackathon_data/'+fname)
+            #udata['text_by_page_url'].keys()
+            unimportant = set(list(udata['text_by_page_url'].keys())) - set(important_urls.url.values)
+            if len(unimportant)>0:
+                extras = np.random.choice(list(unimportant),3)
+                random_urls.extend(extras)
+    with open("random_urls.pickle", 'wb') as f: pickle.dump(f,pick_urls)
+'''
+
+### end ###
 def document_should_skip(url):
     extensions = [".js", ".css", ".pdf", ".csv", ".doc", ".docx"]
     return any(ext in url for ext in extensions)
@@ -49,10 +79,13 @@ def chunkize(text, k):
     return chunks
 
 
+
 def json_to_documents(file_name):
     data = load_document(os.path.join(folder_path, file_name))
     docs = []
     for i, (url, text) in enumerate(data.get('text_by_page_url', {}).items()):
+        if url not in important_urls and url not in random_urls:
+            continue
         if document_should_skip(url):
             continue
         try:
